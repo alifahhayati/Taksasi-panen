@@ -214,7 +214,7 @@
 <div class="screen active" id="screen-home">
   <header>
     <h1>SENSUS & TAKSASI AKP</h1>
-    <div class="estate-name">Teluk Siak Estate — PT Aneka Intipersada</div>
+    <div class="estate-name">Minamas</div>
   </header>
   <main>
     <div id="resumeCard" style="display:none;"></div>
@@ -251,7 +251,7 @@
       <input type="number" inputmode="decimal" id="inpBJR" placeholder="contoh: 18">
     </div>
     <div class="field-group">
-      <label class="field-label">HA PANEN HARI INI</label>
+      <label class="field-label">HA PANEN BESOK</label>
       <input type="number" inputmode="decimal" id="inpHaPanen" placeholder="contoh: 12.5">
     </div>
     <div class="error-msg" id="setupError">Lengkapi semua data dulu sebelum mulai sensus.</div>
@@ -275,7 +275,7 @@
     </div>
 
     <div id="entryPane">
-      <div class="tree-label">POHON NOMOR</div>
+      <div class="tree-label">POKOK NOMOR</div>
       <div class="tree-num" id="treeNum">1</div>
       <div class="tree-count">Tandan sementara: <b id="runningTotal">0</b></div>
       <div class="recent-strip" id="recentStrip"></div>
@@ -347,7 +347,7 @@
   <main>
     <div class="section-title">Kapasitas Panen (Ha / HK)</div>
     <input type="number" inputmode="decimal" id="inpBasisHK" style="margin-bottom:8px;">
-    <div style="font-size:13px;color:var(--dim);margin-bottom:20px;">Rata-rata luas yang bisa dikerjakan 1 pemanen per hari kerja. Standar umum 3,5 Ha/HK — sesuaikan dengan kebijakan Teluk Siak Estate. Dipakai untuk menghitung kebutuhan HK dari Ha Panen.</div>
+    <div style="font-size:13px;color:var(--dim);margin-bottom:20px;">Basis Ha / HK </div>
     <button class="btn btn-secondary btn-small" id="btnSaveBasis">Simpan Kapasitas Panen</button>
 
     <div class="divider"></div>
@@ -411,7 +411,7 @@ const K_SESSION = 'akp_current_session';
 /* ===================== STATE ===================== */
 let fields = [];
 let records = [];
-let basisHK = 3.5; // Kapasitas panen: Ha yang bisa dikerjakan 1 pemanen per HK
+let basisHK = 3.5; // Kapasitas panen: Ha per HK
 let session = null; // {fieldCode, tt, sph, luas, tanggal, bjr, haPanen, data[100], pos}
 
 /* ===================== STORAGE HELPERS ===================== */
