@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Sensus & Taksasi AKP</title>
+<title>Sensus AKP & Taksasi Panen</title>
 <style>
   :root{
     --bg: #ffffff;
@@ -427,7 +427,24 @@ let session = null; // {fieldCode, tt, sph, luas, tanggal, bjr, haPanen, data[10
 function loadAll(){
   try{ fields = JSON.parse(localStorage.getItem(K_FIELDS)) || null; }catch(e){ fields = null; }
   if(!fields){
-    fields = [{code:'F013', tt:2015, sph:145, luas:45.3}];
+    fields = [{code:'E014', tt:2011, sph:130, luas:15}],
+    fields = [{code:'E011', tt:2013, sph:139, luas:54.23}],
+    fields = [{code:'E012', tt:2013, sph:144, luas:41.09}],
+    fields = [{code:'E013', tt:2013, sph:151, luas:53.62}],
+    fields = [{code:'F013', tt:2013, sph:144, luas:68.97}],
+    fields = [{code:'E008', tt:2014, sph:156, luas:52.02}],
+    fields = [{code:'E009', tt:2014, sph:147, luas:55.87}],
+    fields = [{code:'E010', tt:2014, sph:162, luas:48.13}],
+    fields = [{code:'F008', tt:2014, sph:162, luas:52.77}],
+    fields = [{code:'F009', tt:2014, sph:153, luas:58.79}],
+    fields = [{code:'F010', tt:2014, sph:169, luas:71.11}],
+    fields = [{code:'F014', tt:2015, sph:161, luas:59.08}],
+    fields = [{code:'F015', tt:2015, sph:160, luas:33.20}],
+    fields = [{code:'F016', tt:2015, sph:157, luas:47.89}],
+    fields = [{code:'G014', tt:2016, sph:144, luas:61.84}],
+    fields = [{code:'G015', tt:2016, sph:159, luas:90.13}],
+    fields = [{code:'H016', tt:2018, sph:144, luas:66.76}],
+    fields = [{code:'E014', tt:2020, sph:144, luas:15.27}];
     saveFields();
   }
   try{ records = JSON.parse(localStorage.getItem(K_RECORDS)) || []; }catch(e){ records = []; }
