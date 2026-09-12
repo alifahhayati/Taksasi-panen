@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sensus & Taksasi AKP</title>
+<style>
+  :root{
+    --bg: #ffffff;
+    --panel: #f4f4f2;
+    --line: #d9d9d4;
+    --ink: #1a1a17;
+    --dim: #6b6a5f;
+    --tbs: #c47f1e;
+    --tbs-dim: #fbe8c8;
+    --green: #4a7a2e;
+    --green-dim: #e6f0de;
+    --danger: #b23a26;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:'Calibri','Segoe UI',ui-sans-serif,sans-serif;
+    overflow-x:hidden;height:100%;}
+  body{display:flex;flex-direction:column;min-height:100vh;padding-bottom:16px;}
+  .screen{display:none;flex:1;flex-direction:column;}
+  .screen.active{display:flex;}
+
+  /* ===== HEADER ===== */
+  header{
+    padding:14px 16px 10px;
+    border-bottom:2px solid var(--line);
+    flex-shrink:0;
+  }
+  h1{font-size:26px;letter-spacing:0.5px;margin:0;font-weight:700;color:var(--tbs);}
+  .estate-name{font-size:16px;font-weight:700;color:var(--ink);margin-top:3px;}
+  .backrow{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .backbtn{
+    background:none;border:none;font-size:22px;color:var(--dim);padding:2px 8px 2px 0;font-weight:700;
+  }
+  .screen-title{font-size:19px;font-weight:700;color:var(--ink);}
+
+  main{flex:1;display:flex;flex-direction:column;padding:16px;overflow-y:auto;}
+
+  /* ===== BUTTONS ===== */
+  .btn{
+    display:block;width:100%;padding:18px 0;border-radius:12px;border:none;
+    font-family:inherit;font-size:18px;font-weight:700;letter-spacing:0.3px;
+    margin-bottom:12px;text-align:center;
+  }
+  .btn-primary{background:var(--tbs);color:#fff;}
+  .btn-primary:active{background:#a3670f;}
+  .btn-secondary{background:var(--panel);color:var(--ink);border:1.5px solid var(--line);}
+  .btn-secondary:active{background:var(--line);}
+  .btn-outline{background:transparent;color:var(--dim);border:1.5px solid var(--line);}
+  .btn-danger{background:transparent;color:var(--danger);border:1.5px solid var(--danger);}
+  .btn-small{padding:12px 0;font-size:14px;}
+  .btn-link{background:none;border:none;color:var(--dim);font-family:inherit;font-size:14px;text-decoration:underline;padding:10px 0;}
+
+  /* ===== HOME SCREEN ===== */
+  #screen-home main{justify-content:flex-start;padding-top:24px;}
+  .resume-card{
+    background:var(--tbs-dim);border:1.5px solid var(--tbs);border-radius:12px;
+    padding:16px;margin-bottom:20px;
+  }
+  .resume-card .k{font-size:13px;color:var(--tbs);font-weight:700;letter-spacing:0.5px;}
+  .resume-card .v{font-size:17px;font-weight:700;color:var(--ink);margin-top:4px;}
+  .resume-card .p{font-size:14px;color:var(--dim);margin-top:2px;}
+
+  /* ===== FORM ELEMENTS ===== */
+  .field-group{margin-bottom:18px;}
+  .field-label{font-size:15px;font-weight:700;color:var(--dim);margin-bottom:6px;display:block;}
+  select, input[type="date"], input[type="number"], input[type="text"]{
+    width:100%;padding:14px 12px;font-size:18px;font-family:inherit;
+    border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+  }
+  select:focus, input:focus{outline:2px solid var(--tbs);border-color:var(--tbs);}
+  .field-info{
+    display:flex;gap:10px;margin-top:10px;
+  }
+  .info-chip{
+    flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:10px;text-align:center;
+  }
+  .info-chip .k{font-size:11px;color:var(--dim);letter-spacing:0.5px;font-weight:700;}
+  .info-chip .v{font-size:17px;font-weight:700;margin-top:3px;}
+  .error-msg{color:var(--danger);font-size:14px;margin-top:6px;display:none;}
+
+  /* ===== SENSUS ENTRY (reused pattern) ===== */
+  .sensus-subnav{display:flex;gap:8px;margin-bottom:14px;}
+  .subtab{
+    flex:1;padding:11px 0;text-align:center;background:var(--panel);border:1.5px solid var(--line);
+    color:var(--dim);font-family:inherit;font-size:14px;letter-spacing:0.3px;border-radius:8px;font-weight:700;
+  }
+  .subtab.active{color:#fff;background:var(--dim);border-color:var(--dim);}
+  .subtab.resulttab{background:var(--tbs-dim);border-color:var(--tbs);color:var(--tbs);}
+  .subtab.resulttab.active{background:var(--tbs);color:#fff;}
+
+  .progress-track{height:8px;background:var(--panel);border-radius:4px;overflow:hidden;margin-bottom:16px;}
+  .progress-fill{height:100%;background:var(--tbs);width:0%;transition:width 0.15s;}
+
+  .tree-label{text-align:center;color:var(--dim);font-size:15px;letter-spacing:1px;font-weight:700;}
+  .tree-num{text-align:center;font-size:60px;font-weight:700;color:var(--ink);line-height:1.05;margin:2px 0 0;}
+  .tree-count{text-align:center;font-size:15px;color:var(--dim);margin-bottom:10px;}
+  .tree-count b{color:var(--tbs);font-size:17px;}
+
+  .recent-strip{display:flex;gap:5px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+  .rdot{
+    width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:700;border:1.5px solid var(--line);color:var(--dim);
+  }
+  .rdot.v1{background:#e3ecd9;border-color:#8fae5c;color:#3a5222;}
+  .rdot.v2{background:#d3e6a8;border-color:#7a9b3a;color:#38510f;}
+  .rdot.v3{background:#f2dd9a;border-color:#c9a83a;color:#5c4712;}
+  .rdot.v4{background:var(--tbs);border-color:#a3670f;color:#fff;}
+  .rdot.current{outline:2.5px solid var(--ink);}
+
+  .keypad-wrap{
+    flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr;
+    grid-template-areas:"one two" "three four" "zero zero";gap:12px;margin-top:4px;min-height:280px;
+  }
+  .key{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border:2.5px solid var(--line);background:var(--panel);border-radius:16px;
+  }
+  .key:active{transform:scale(0.96);}
+  .key .kval{font-size:58px;font-weight:700;line-height:1;}
+  .key .klabel{font-size:13px;letter-spacing:0.5px;color:var(--dim);margin-top:6px;font-weight:700;}
+  .key[data-v="1"]{border-color:#8fae5c;background:#f3f8ed;}
+  .key[data-v="1"] .kval{color:#3a5222;}
+  .key[data-v="2"]{border-color:#7a9b3a;background:#eef6d9;}
+  .key[data-v="2"] .kval{color:#38510f;}
+  .key[data-v="3"]{border-color:#c9a83a;background:#fbf3d9;}
+  .key[data-v="3"] .kval{color:#5c4712;}
+  .key[data-v="4"]{border-color:var(--tbs);background:var(--tbs-dim);}
+  .key[data-v="4"] .kval{color:var(--tbs);}
+  #keyOne{grid-area:one;} #keyTwo{grid-area:two;} #keyThree{grid-area:three;} #keyFour{grid-area:four;}
+  .key-zero{
+    grid-area:zero;display:flex;align-items:center;justify-content:center;gap:16px;
+    border:2.5px solid var(--line);background:var(--panel);border-radius:16px;color:var(--dim);
+  }
+  .key-zero:active{transform:scale(0.98);}
+  .key-zero .kval{font-size:58px;font-weight:700;color:var(--ink);}
+  .key-zero .klabel{font-size:14px;letter-spacing:0.5px;font-weight:700;}
+
+  .entry-nav{display:flex;gap:8px;margin-top:12px;flex-shrink:0;}
+  .navbtn{
+    flex:1;padding:13px 0;border:1.5px solid var(--line);background:transparent;
+    color:var(--dim);font-family:inherit;font-size:14px;letter-spacing:0.5px;border-radius:8px;font-weight:700;
+  }
+
+  .grid100{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;max-width:520px;margin:0 auto;}
+  .cell{
+    aspect-ratio:1;border:1.5px solid var(--line);background:var(--panel);color:var(--dim);
+    display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;border-radius:4px;
+  }
+  .cell.filled{color:#fff;}
+  .cell[data-v="1"]{background:#8fae5c;border-color:#6f8f42;}
+  .cell[data-v="2"]{background:#7a9b3a;border-color:#5c7a24;}
+  .cell[data-v="3"]{background:#c9a83a;border-color:#a3831e;}
+  .cell[data-v="4"]{background:var(--tbs);border-color:#a3670f;}
+
+  /* ===== TAKSASI RESULT ===== */
+  .result-hero{text-align:center;margin-bottom:20px;}
+  .result-label{font-size:15px;color:var(--dim);letter-spacing:1.5px;font-weight:700;}
+  .result-big{font-size:80px;font-weight:700;color:var(--tbs);line-height:1.1;margin:6px 0;}
+  .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+  .rcard{background:var(--panel);border:1.5px solid var(--line);padding:16px;text-align:center;border-radius:12px;}
+  .rcard .k{font-size:12px;color:var(--dim);letter-spacing:0.5px;font-weight:700;}
+  .rcard .v{font-size:24px;font-weight:700;margin-top:6px;color:var(--ink);}
+  .rcard.wide{grid-column:span 2;}
+
+  /* ===== DATA TABLE ===== */
+  .table-wrap{overflow-x:auto;border:1.5px solid var(--line);border-radius:10px;}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px;}
+  th{background:var(--panel);color:var(--dim);font-size:12px;text-align:left;padding:10px 8px;border-bottom:2px solid var(--line);white-space:nowrap;}
+  td{padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  tr:active{background:var(--tbs-dim);}
+  .empty-state{text-align:center;color:var(--dim);font-size:15px;padding:40px 20px;}
+
+  /* ===== FIELD DB MANAGEMENT ===== */
+  .field-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;margin-bottom:10px;
+  }
+  .field-row .fcode{font-size:17px;font-weight:700;}
+  .field-row .fmeta{font-size:13px;color:var(--dim);margin-top:2px;}
+  .field-row .delbtn{color:var(--danger);background:none;border:none;font-size:20px;padding:6px 10px;font-weight:700;}
+  .divider{height:2px;background:var(--line);margin:20px 0;}
+  .section-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:12px;}
+
+  /* ===== MODAL / CONFIRM ===== */
+  .confirm-box{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);}
+  .confirm-box.open{display:flex;}
+  .confirm-panel{background:#fff;border:1.5px solid var(--tbs);padding:22px;width:85%;max-width:340px;text-align:center;border-radius:14px;max-height:80vh;overflow-y:auto;}
+  .confirm-panel p{font-size:16px;color:var(--ink);margin:0 0 18px;line-height:1.6;}
+  .confirm-row{display:flex;gap:10px;}
+  .pbtn{flex:1;padding:14px 0;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;}
+
+  #toast{
+    position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-20px);
+    background:var(--tbs);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;
+    opacity:0;transition:all 0.25s;z-index:50;pointer-events:none;max-width:85%;text-align:center;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px;}
+  .detail-row .k{color:var(--dim);}
+  .detail-row .v{font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- ========== HOME ========== -->
+<div class="screen active" id="screen-home">
+  <header>
+    <h1>SENSUS & TAKSASI AKP</h1>
+    <div class="estate-name">Teluk Siak Estate — PT Aneka Intipersada</div>
+  </header>
+  <main>
+    <div id="resumeCard" style="display:none;"></div>
+    <button class="btn btn-primary" id="btnNewSensus">+ SENSUS BARU</button>
+    <button class="btn btn-secondary" id="btnViewData">LIHAT DATA</button>
+    <button class="btn-link" id="btnManageField" style="align-self:center;">Kelola Field & Pengaturan</button>
+  </main>
+</div>
+
+<!-- ========== FIELD SETUP ========== -->
+<div class="screen" id="screen-setup">
+  <header>
+    <div class="backrow">
+      <button class="backbtn" onclick="showScreen('home')">‹</button>
+      <div class="screen-title">Data Awal Sensus</div>
+    </div>
+  </header>
+  <main>
+    <div class="field-group">
+      <label class="field-label">FIELD</label>
+      <select id="selField"></select>
+      <div class="field-info">
+        <div class="info-chip"><div class="k">TT</div><div class="v" id="infoTT">-</div></div>
+        <div class="info-chip"><div class="k">SPH</div><div class="v" id="infoSPH">-</div></div>
+        <div class="info-chip"><div class="k">LUAS (HA)</div><div class="v" id="infoLuas">-</div></div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">TANGGAL</label>
+      <input type="date" id="inpTanggal">
+    </div>
+    <div class="field-group">
+      <label class="field-label">BJR (KG) — diisi manual</label>
+      <input type="number" inputmode="decimal" id="inpBJR" placeholder="contoh: 18">
+    </div>
+    <div class="field-group">
+      <label class="field-label">HA PANEN HARI INI</label>
+      <input type="number" inputmode="decimal" id="inpHaPanen" placeholder="contoh: 12.5">
+    </div>
+    <div class="error-msg" id="setupError">Lengkapi semua data dulu sebelum mulai sensus.</div>
+    <button class="btn btn-primary" id="btnStartSensus" style="margin-top:10px;">MULAI SENSUS AKP →</button>
+  </main>
+</div>
+
+<!-- ========== SENSUS ========== -->
+<div class="screen" id="screen-sensus">
+  <header>
+    <div class="backrow">
+      <button class="backbtn" onclick="confirmExitSensus()">‹</button>
+      <div class="screen-title" id="sensusHeaderTitle">Sensus AKP</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </header>
+  <main>
+    <div class="sensus-subnav">
+      <button class="subtab active" id="tabEntry">INPUT</button>
+      <button class="subtab" id="tabGrid">GRID <span id="gridCount">0/100</span></button>
+    </div>
+
+    <div id="entryPane">
+      <div class="tree-label">POHON NOMOR</div>
+      <div class="tree-num" id="treeNum">1</div>
+      <div class="tree-count">Tandan sementara: <b id="runningTotal">0</b></div>
+      <div class="recent-strip" id="recentStrip"></div>
+      <div class="keypad-wrap">
+        <div class="key" id="keyOne" data-v="1"><span class="kval">1</span><span class="klabel">tandan</span></div>
+        <div class="key" id="keyTwo" data-v="2"><span class="kval">2</span><span class="klabel">tandan</span></div>
+        <div class="key" id="keyThree" data-v="3"><span class="kval">3</span><span class="klabel">tandan</span></div>
+        <div class="key" id="keyFour" data-v="4"><span class="kval">4</span><span class="klabel">tandan</span></div>
+        <div class="key-zero" id="keyZero"><span class="kval">0</span><span class="klabel">tidak ada tandan matang</span></div>
+      </div>
+      <div class="entry-nav">
+        <button class="navbtn" id="prevBtn">‹ Kembali</button>
+        <button class="navbtn" id="nextBtn">Lewati ›</button>
+      </div>
+    </div>
+
+    <div id="gridPane" style="display:none;">
+      <div class="grid100" id="grid100"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ========== RESULT / TAKSASI ========== -->
+<div class="screen" id="screen-result">
+  <header>
+    <div class="backrow">
+      <div class="screen-title">Hasil Taksasi Panen</div>
+    </div>
+  </header>
+  <main>
+    <div class="result-hero">
+      <div class="result-label">% AKP</div>
+      <div class="result-big" id="rAkp">0%</div>
+      <div style="color:var(--dim);font-size:14px;" id="rFieldInfo">-</div>
+    </div>
+    <div class="result-grid">
+      <div class="rcard"><div class="k">TANDAN MATANG</div><div class="v" id="rTandan">0</div></div>
+      <div class="rcard"><div class="k">TOTAL JANJANG</div><div class="v" id="rJanjang">0</div></div>
+      <div class="rcard"><div class="k">BOBOT (KG)</div><div class="v" id="rBeratKg">0</div></div>
+      <div class="rcard"><div class="k">BOBOT (TON)</div><div class="v" id="rBeratTon">0</div></div>
+      <div class="rcard wide"><div class="k">KEBUTUHAN HK PANEN</div><div class="v" id="rHK">0</div></div>
+    </div>
+    <button class="btn btn-primary" id="btnAnotherField">SENSUS FIELD LAIN</button>
+    <button class="btn btn-secondary" id="btnBackHomeFromResult">KEMBALI KE BERANDA</button>
+  </main>
+</div>
+
+<!-- ========== DATA TABLE ========== -->
+<div class="screen" id="screen-data">
+  <header>
+    <div class="backrow">
+      <button class="backbtn" onclick="showScreen('home')">‹</button>
+      <div class="screen-title">Rekap Data Sensus</div>
+    </div>
+  </header>
+  <main>
+    <div id="dataTableWrap"></div>
+  </main>
+</div>
+
+<!-- ========== FIELD DB MANAGEMENT ========== -->
+<div class="screen" id="screen-fielddb">
+  <header>
+    <div class="backrow">
+      <button class="backbtn" onclick="showScreen('home')">‹</button>
+      <div class="screen-title">Kelola Field & Pengaturan</div>
+    </div>
+  </header>
+  <main>
+    <div class="section-title">Kapasitas Panen (Ha / HK)</div>
+    <input type="number" inputmode="decimal" id="inpBasisHK" style="margin-bottom:8px;">
+    <div style="font-size:13px;color:var(--dim);margin-bottom:20px;">Rata-rata luas yang bisa dikerjakan 1 pemanen per hari kerja. Standar umum 3,5 Ha/HK — sesuaikan dengan kebijakan Teluk Siak Estate. Dipakai untuk menghitung kebutuhan HK dari Ha Panen.</div>
+    <button class="btn btn-secondary btn-small" id="btnSaveBasis">Simpan Kapasitas Panen</button>
+
+    <div class="divider"></div>
+
+    <div class="section-title">Daftar Field</div>
+    <div id="fieldList"></div>
+
+    <div class="divider"></div>
+
+    <div class="section-title">Tambah Field Baru</div>
+    <div class="field-group">
+      <label class="field-label">KODE FIELD</label>
+      <input type="text" id="newFieldCode" placeholder="contoh: F013">
+    </div>
+    <div class="field-group">
+      <label class="field-label">TT (TAHUN TANAM)</label>
+      <input type="number" inputmode="numeric" id="newFieldTT" placeholder="contoh: 2015">
+    </div>
+    <div class="field-group">
+      <label class="field-label">SPH (POKOK/HA)</label>
+      <input type="number" inputmode="numeric" id="newFieldSPH" placeholder="contoh: 145">
+    </div>
+    <div class="field-group">
+      <label class="field-label">LUAS (HA)</label>
+      <input type="number" inputmode="decimal" id="newFieldLuas" placeholder="contoh: 45.3">
+    </div>
+    <button class="btn btn-primary" id="btnAddField">+ Tambah Field</button>
+  </main>
+</div>
+
+<div class="confirm-box" id="confirmBox">
+  <div class="confirm-panel">
+    <p id="confirmText">Yakin?</p>
+    <div class="confirm-row">
+      <button class="pbtn" id="confirmNo" style="background:transparent;border:1px solid var(--line);color:var(--dim)">Batal</button>
+      <button class="pbtn" id="confirmYes" style="background:var(--danger);color:#fff">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-box" id="detailBox">
+  <div class="confirm-panel" style="text-align:left;">
+    <div class="section-title" id="detailTitle">Detail Sensus</div>
+    <div id="detailBody"></div>
+    <div class="confirm-row" style="margin-top:16px;">
+      <button class="pbtn" id="detailDelete" style="background:transparent;border:1px solid var(--danger);color:var(--danger)">Hapus</button>
+      <button class="pbtn" id="detailClose" style="background:var(--tbs);color:#fff">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ===================== STORAGE KEYS ===================== */
+const K_FIELDS = 'akp_fields_db';
+const K_RECORDS = 'akp_records';
+const K_BASIS = 'akp_basis_hk';
+const K_SESSION = 'akp_current_session';
+
+/* ===================== STATE ===================== */
+let fields = [];
+let records = [];
+let basisHK = 3.5; // Kapasitas panen: Ha yang bisa dikerjakan 1 pemanen per HK
+let session = null; // {fieldCode, tt, sph, luas, tanggal, bjr, haPanen, data[100], pos}
+
+/* ===================== STORAGE HELPERS ===================== */
+function loadAll(){
+  try{ fields = JSON.parse(localStorage.getItem(K_FIELDS)) || null; }catch(e){ fields = null; }
+  if(!fields){
+    fields = [{code:'F013', tt:2015, sph:145, luas:45.3}];
+    saveFields();
+  }
+  try{ records = JSON.parse(localStorage.getItem(K_RECORDS)) || []; }catch(e){ records = []; }
+  try{ basisHK = parseFloat(localStorage.getItem(K_BASIS)) || 3.5; }catch(e){ basisHK = 3.5; }
+  try{ session = JSON.parse(localStorage.getItem(K_SESSION)) || null; }catch(e){ session = null; }
+}
+function saveFields(){ localStorage.setItem(K_FIELDS, JSON.stringify(fields)); }
+function saveRecords(){ localStorage.setItem(K_RECORDS, JSON.stringify(records)); }
+function saveBasis(){ localStorage.setItem(K_BASIS, String(basisHK)); }
+function saveSession(){
+  if(session) localStorage.setItem(K_SESSION, JSON.stringify(session));
+  else localStorage.removeItem(K_SESSION);
+}
+
+/* ===================== SCREEN NAV ===================== */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(name==='home') renderHome();
+  if(name==='setup') renderSetup();
+  if(name==='data') renderDataTable();
+  if(name==='fielddb') renderFieldDB();
+}
+
+/* ===================== TOAST ===================== */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+/* ===================== CONFIRM DIALOG ===================== */
+let confirmCallback = null;
+function askConfirm(text, cb){
+  document.getElementById('confirmText').textContent = text;
+  confirmCallback = cb;
+  document.getElementById('confirmBox').classList.add('open');
+}
+document.getElementById('confirmNo').addEventListener('click', ()=>{
+  document.getElementById('confirmBox').classList.remove('open');
+  confirmCallback = null;
+});
+document.getElementById('confirmYes').addEventListener('click', ()=>{
+  document.getElementById('confirmBox').classList.remove('open');
+  if(confirmCallback) confirmCallback();
+  confirmCallback = null;
+});
+
+/* ===================== HOME ===================== */
+function renderHome(){
+  const card = document.getElementById('resumeCard');
+  if(session){
+    const filled = session.data.filter(v=>v!==null).length;
+    card.style.display = 'block';
+    card.innerHTML = `
+      <div class="resume-card">
+        <div class="k">SENSUS BELUM SELESAI</div>
+        <div class="v">${session.fieldCode} — ${session.tanggal}</div>
+        <div class="p">Progres: ${filled}/100 pohon</div>
+      </div>
+      <button class="btn btn-primary" id="btnResume">LANJUTKAN SENSUS</button>
+    `;
+    document.getElementById('btnResume').addEventListener('click', ()=>{
+      showScreen('sensus');
+      renderSensusAll();
+    });
+  } else {
+    card.style.display = 'none';
+    card.innerHTML = '';
+  }
+}
+document.getElementById('btnNewSensus').addEventListener('click', ()=>{
+  if(session){
+    askConfirm('Ada sensus yang belum selesai untuk '+session.fieldCode+'. Mulai sensus baru akan menghapus progres itu. Lanjutkan?', ()=>{
+      session = null; saveSession();
+      showScreen('setup');
+    });
+  } else {
+    showScreen('setup');
+  }
+});
+document.getElementById('btnViewData').addEventListener('click', ()=> showScreen('data'));
+document.getElementById('btnManageField').addEventListener('click', ()=> showScreen('fielddb'));
+
+/* ===================== FIELD SETUP ===================== */
+function renderSetup(){
+  const sel = document.getElementById('selField');
+  sel.innerHTML = '';
+  fields.forEach((f,i)=>{
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = f.code + ' — TT ' + f.tt + ' — ' + f.luas + ' Ha';
+    sel.appendChild(opt);
+  });
+  updateFieldInfo();
+  sel.onchange = updateFieldInfo;
+  document.getElementById('inpTanggal').value = new Date().toISOString().slice(0,10);
+  document.getElementById('inpBJR').value = '';
+  document.getElementById('inpHaPanen').value = '';
+  document.getElementById('setupError').style.display = 'none';
+}
+function updateFieldInfo(){
+  const sel = document.getElementById('selField');
+  const f = fields[sel.value];
+  if(!f) return;
+  document.getElementById('infoTT').textContent = f.tt;
+  document.getElementById('infoSPH').textContent = f.sph;
+  document.getElementById('infoLuas').textContent = f.luas;
+}
+document.getElementById('btnStartSensus').addEventListener('click', ()=>{
+  const sel = document.getElementById('selField');
+  const f = fields[sel.value];
+  const tanggal = document.getElementById('inpTanggal').value;
+  const bjr = parseFloat(document.getElementById('inpBJR').value);
+  const haPanen = parseFloat(document.getElementById('inpHaPanen').value);
+  if(!f || !tanggal || isNaN(bjr) || bjr<=0 || isNaN(haPanen) || haPanen<=0){
+    document.getElementById('setupError').style.display = 'block';
+    return;
+  }
+  session = {
+    fieldCode: f.code, tt: f.tt, sph: f.sph, luas: f.luas,
+    tanggal: tanggal, bjr: bjr, haPanen: haPanen,
+    data: Array(100).fill(null), pos: 0
+  };
+  saveSession();
+  showScreen('sensus');
+  renderSensusAll();
+});
+
+/* ===================== SENSUS ENTRY ===================== */
+const entryPane = document.getElementById('entryPane');
+const gridPane = document.getElementById('gridPane');
+const tabEntry = document.getElementById('tabEntry');
+const tabGrid = document.getElementById('tabGrid');
+
+function buildGrid100(){
+  const grid = document.getElementById('grid100');
+  grid.innerHTML = '';
+  for(let i=0;i<100;i++){
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.textContent = i+1;
+    cell.addEventListener('click', ()=>{
+      session.pos = i; saveSession();
+      showSensusTab('entry');
+      renderEntry();
+    });
+    grid.appendChild(cell);
+  }
+}
+buildGrid100();
+
+document.getElementById('keyZero').addEventListener('click', ()=>enterValue(0));
+document.getElementById('keyOne').addEventListener('click', ()=>enterValue(1));
+document.getElementById('keyTwo').addEventListener('click', ()=>enterValue(2));
+document.getElementById('keyThree').addEventListener('click', ()=>enterValue(3));
+document.getElementById('keyFour').addEventListener('click', ()=>enterValue(4));
+
+function enterValue(v){
+  session.data[session.pos] = v;
+  if(session.pos < 99){
+    session.pos += 1;
+    saveSession();
+    renderSensusAll();
+  } else {
+    saveSession();
+    finishSensus();
+  }
+}
+
+function renderEntry(){
+  document.getElementById('sensusHeaderTitle').textContent = session.fieldCode + ' — ' + session.tanggal;
+  document.getElementById('treeNum').textContent = session.pos+1;
+  const filled = session.data.filter(v=>v!==null);
+  const total = filled.reduce((a,b)=>a+b,0);
+  document.getElementById('runningTotal').textContent = total;
+
+  const strip = document.getElementById('recentStrip');
+  strip.innerHTML = '';
+  const start = Math.max(0, session.pos-9);
+  for(let i=start;i<=session.pos;i++){
+    const d = document.createElement('div');
+    const val = session.data[i];
+    d.className = 'rdot' + (val!==null ? ' v'+val : '') + (i===session.pos ? ' current' : '');
+    d.textContent = i+1;
+    strip.appendChild(d);
+  }
+}
+function renderGrid(){
+  const grid = document.getElementById('grid100');
+  for(let i=0;i<100;i++){
+    const cell = grid.children[i];
+    const val = session.data[i];
+    if(val===null){
+      cell.classList.remove('filled'); cell.removeAttribute('data-v'); cell.textContent = i+1;
+    } else {
+      cell.classList.add('filled'); cell.dataset.v = val; cell.textContent = val;
+    }
+  }
+}
+function renderHeaderProgress(){
+  const filled = session.data.filter(v=>v!==null).length;
+  document.getElementById('progressFill').style.width = filled + '%';
+  document.getElementById('gridCount').textContent = filled + '/100';
+}
+function renderSensusAll(){
+  if(!session) return;
+  renderEntry(); renderGrid(); renderHeaderProgress();
+}
+function showSensusTab(name){
+  entryPane.style.display = name==='entry' ? 'block' : 'none';
+  gridPane.style.display = name==='grid' ? 'block' : 'none';
+  tabEntry.classList.toggle('active', name==='entry');
+  tabGrid.classList.toggle('active', name==='grid');
+}
+tabEntry.addEventListener('click', ()=>{ showSensusTab('entry'); renderEntry(); });
+tabGrid.addEventListener('click', ()=>{ showSensusTab('grid'); renderGrid(); });
+
+document.getElementById('prevBtn').addEventListener('click', ()=>{
+  if(session.pos>0){ session.pos -= 1; saveSession(); renderEntry(); }
+});
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  if(session.pos<99){ session.pos += 1; saveSession(); renderEntry(); }
+});
+function confirmExitSensus(){
+  askConfirm('Keluar dari sensus? Progres akan tetap tersimpan dan bisa dilanjutkan nanti dari Beranda.', ()=>{
+    showScreen('home');
+  });
+}
+
+/* ===================== TAKSASI CALC & SAVE ===================== */
+function finishSensus(){
+  const filled = session.data.filter(v=>v!==null);
+  const totalTandan = filled.reduce((a,b)=>a+b,0);
+  const akpDecimal = totalTandan/100;
+  const akpPercent = akpDecimal*100;
+  const totalJanjang = akpDecimal * session.sph * session.luas;
+  const totalBeratKg = totalJanjang * session.bjr;
+  const totalBeratTon = totalBeratKg/1000;
+  const kebutuhanHK = basisHK>0 ? session.haPanen/basisHK : 0;
+
+  const record = {
+    id: Date.now(),
+    fieldCode: session.fieldCode, tt: session.tt, sph: session.sph, luas: session.luas,
+    tanggal: session.tanggal, bjr: session.bjr, haPanen: session.haPanen,
+    totalTandan, akpPercent, totalJanjang, totalBeratKg, totalBeratTon, kebutuhanHK,
+    savedAt: Date.now()
+  };
+  records.push(record);
+  saveRecords();
+  session = null;
+  saveSession();
+
+  document.getElementById('rAkp').textContent = akpPercent.toFixed(1) + '%';
+  document.getElementById('rFieldInfo').textContent = record.fieldCode + ' — ' + record.tanggal + ' — Ha Panen: ' + record.haPanen;
+  document.getElementById('rTandan').textContent = totalTandan;
+  document.getElementById('rJanjang').textContent = Math.round(totalJanjang);
+  document.getElementById('rBeratKg').textContent = Math.round(totalBeratKg).toLocaleString('id-ID');
+  document.getElementById('rBeratTon').textContent = totalBeratTon.toFixed(2);
+  document.getElementById('rHK').textContent = kebutuhanHK.toFixed(1) + ' HK';
+
+  showScreen('result');
+}
+document.getElementById('btnAnotherField').addEventListener('click', ()=> showScreen('setup'));
+document.getElementById('btnBackHomeFromResult').addEventListener('click', ()=> showScreen('home'));
+
+/* ===================== DATA TABLE ===================== */
+function renderDataTable(){
+  const wrap = document.getElementById('dataTableWrap');
+  if(records.length===0){
+    wrap.innerHTML = '<div class="empty-state">Belum ada data sensus tersimpan.</div>';
+    return;
+  }
+  const sorted = [...records].sort((a,b)=> b.savedAt - a.savedAt);
+  let html = '<div class="table-wrap"><table><thead><tr>' +
+    '<th>Tanggal</th><th>Field</th><th>Ha Panen</th><th>%AKP</th><th>Janjang</th><th>Berat (Kg)</th><th>HK</th>' +
+    '</tr></thead><tbody>';
+  sorted.forEach(r=>{
+    html += `<tr onclick="showDetail(${r.id})">
+      <td>${r.tanggal}</td><td>${r.fieldCode}</td><td>${r.haPanen}</td>
+      <td>${r.akpPercent.toFixed(1)}%</td><td>${Math.round(r.totalJanjang)}</td>
+      <td>${Math.round(r.totalBeratKg).toLocaleString('id-ID')}</td><td>${r.kebutuhanHK.toFixed(1)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  wrap.innerHTML = html;
+}
+let detailId = null;
+function showDetail(id){
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  detailId = id;
+  document.getElementById('detailTitle').textContent = r.fieldCode + ' — ' + r.tanggal;
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-row"><span class="k">TT / SPH / Luas</span><span class="v">${r.tt} / ${r.sph} / ${r.luas} Ha</span></div>
+    <div class="detail-row"><span class="k">BJR</span><span class="v">${r.bjr} kg</span></div>
+    <div class="detail-row"><span class="k">Ha Panen</span><span class="v">${r.haPanen}</span></div>
+    <div class="detail-row"><span class="k">Tandan Matang (sampel)</span><span class="v">${r.totalTandan}</span></div>
+    <div class="detail-row"><span class="k">%AKP</span><span class="v">${r.akpPercent.toFixed(1)}%</span></div>
+    <div class="detail-row"><span class="k">Total Janjang</span><span class="v">${Math.round(r.totalJanjang)}</span></div>
+    <div class="detail-row"><span class="k">Bobot</span><span class="v">${Math.round(r.totalBeratKg).toLocaleString('id-ID')} kg (${r.totalBeratTon.toFixed(2)} ton)</span></div>
+    <div class="detail-row"><span class="k">Kebutuhan HK</span><span class="v">${r.kebutuhanHK.toFixed(1)} HK</span></div>
+  `;
+  document.getElementById('detailBox').classList.add('open');
+}
+document.getElementById('detailClose').addEventListener('click', ()=>{
+  document.getElementById('detailBox').classList.remove('open');
+});
+document.getElementById('detailDelete').addEventListener('click', ()=>{
+  askConfirm('Hapus data sensus ini secara permanen?', ()=>{
+    records = records.filter(x=>x.id!==detailId);
+    saveRecords();
+    document.getElementById('detailBox').classList.remove('open');
+    renderDataTable();
+    showToast('Data dihapus');
+  });
+});
+
+/* ===================== FIELD DB MANAGEMENT ===================== */
+function renderFieldDB(){
+  document.getElementById('inpBasisHK').value = basisHK;
+  const list = document.getElementById('fieldList');
+  list.innerHTML = '';
+  fields.forEach((f,i)=>{
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.innerHTML = `
+      <div>
+        <div class="fcode">${f.code}</div>
+        <div class="fmeta">TT ${f.tt} · SPH ${f.sph} · ${f.luas} Ha</div>
+      </div>
+      <button class="delbtn" data-i="${i}">✕</button>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('.delbtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const i = parseInt(btn.dataset.i);
+      askConfirm('Hapus field ' + fields[i].code + ' dari database?', ()=>{
+        fields.splice(i,1);
+        saveFields();
+        renderFieldDB();
+        showToast('Field dihapus');
+      });
+    });
+  });
+}
+document.getElementById('btnSaveBasis').addEventListener('click', ()=>{
+  const v = parseFloat(document.getElementById('inpBasisHK').value);
+  if(!isNaN(v) && v>0){
+    basisHK = v; saveBasis();
+    showToast('Kapasitas panen disimpan: ' + v + ' Ha/HK');
+  }
+});
+document.getElementById('btnAddField').addEventListener('click', ()=>{
+  const code = document.getElementById('newFieldCode').value.trim();
+  const tt = parseInt(document.getElementById('newFieldTT').value);
+  const sph = parseInt(document.getElementById('newFieldSPH').value);
+  const luas = parseFloat(document.getElementById('newFieldLuas').value);
+  if(!code || isNaN(tt) || isNaN(sph) || isNaN(luas)){
+    showToast('Lengkapi semua kolom field baru');
+    return;
+  }
+  fields.push({code, tt, sph, luas});
+  saveFields();
+  document.getElementById('newFieldCode').value = '';
+  document.getElementById('newFieldTT').value = '';
+  document.getElementById('newFieldSPH').value = '';
+  document.getElementById('newFieldLuas').value = '';
+  renderFieldDB();
+  showToast('Field ' + code + ' ditambahkan');
+});
+
+/* ===================== INIT ===================== */
+loadAll();
+showScreen('home');
+</script>
+
+</body>
+</html>
